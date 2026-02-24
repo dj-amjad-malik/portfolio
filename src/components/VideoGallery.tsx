@@ -60,10 +60,16 @@ function buildRows(items: GalleryItem[], cw: number): { items: GalleryItem[]; he
 
 // ─── VideoCard ────────────────────────────────────────────────────────────────
 
+// ✅ FIX 1: Added activeId and onPlay props
 const VideoCard = ({
-  video, index, width, height,
+  video, index, width, height, activeId, onPlay,
 }: {
-  video: GalleryItem; index: number; width: number; height: number;
+  video: GalleryItem;
+  index: number;
+  width: number;
+  height: number;
+  activeId: number | null;         // ✅ FIX 1
+  onPlay: (id: number | null) => void; // ✅ FIX 1
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -73,14 +79,11 @@ const VideoCard = ({
   const [fullscreen, setFullscreen] = useState(false);
   const [hovered, setHovered] = useState(false);
   const [showCtrl, setShowCtrl] = useState(false);
-  // true once video has loaded enough to display — thumbnail shows until then
   const [videoReady, setVideoReady] = useState(false);
-  // true once card enters viewport — only then do we assign video src
   const [inView, setInView] = useState(false);
 
   const ctrlTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Lazy-load: assign src only when card is near viewport
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -98,29 +101,52 @@ const VideoCard = ({
     return () => document.removeEventListener("fullscreenchange", fn);
   }, []);
 
+  // ✅ FIX 2: Pause this card when another becomes active
+  useEffect(() => {
+    if (activeId !== index && playing) {
+      videoRef.current?.pause();
+      setPlaying(false);
+      setShowCtrl(true);
+    }
+  }, [activeId, index]);
+
+  // ✅ FIX 3: Notify gallery when this card plays/pauses
   const togglePlay = () => {
     const v = videoRef.current; if (!v) return;
-    if (playing) { v.pause(); setPlaying(false); }
-    else { v.play().catch(() => { }); setPlaying(true); }
+    if (playing) {
+      v.pause();
+      setPlaying(false);
+      onPlay(null);          // release active lock
+    } else {
+      v.play().catch(() => {});
+      setPlaying(true);
+      onPlay(index);         // claim active lock
+    }
   };
+
   const toggleMute = (e: React.MouseEvent) => {
     e.stopPropagation();
     const v = videoRef.current; if (!v) return;
     v.muted = !muted; setMuted(m => !m);
   };
+
   const toggleFs = (e: React.MouseEvent) => {
     e.stopPropagation();
-    fullscreen ? document.exitFullscreen?.() : containerRef.current?.requestFullscreen?.();
+    if (fullscreen) {
+      document.exitFullscreen?.();
+    } else {
+      containerRef.current?.requestFullscreen?.();
+      setHovered(false);
+    }
   };
+
   const onMove = () => {
     setShowCtrl(true);
     if (ctrlTimer.current) clearTimeout(ctrlTimer.current);
     if (playing) ctrlTimer.current = setTimeout(() => setShowCtrl(false), 2200);
   };
 
-  // Video is ready to show — fade out the thumbnail
   const handleCanPlay = useCallback(() => setVideoReady(true), []);
-
   const ctrlVis = !playing || hovered || showCtrl;
 
   return (
@@ -133,10 +159,6 @@ const VideoCard = ({
       onMouseMove={onMove}
       onClick={togglePlay}
     >
-      {/*
-        THUMBNAIL — shown instantly, fades out once video is ready.
-        The browser loads this tiny jpg immediately; no black frames ever.
-      */}
       <img
         src={video.thumb}
         alt=""
@@ -144,20 +166,13 @@ const VideoCard = ({
         className="vg-thumb"
         style={{
           opacity: videoReady ? 0 : 1,
-          // desaturate thumb to match the "not playing" video filter
           filter: "saturate(0.48) brightness(0.7)",
           transform: !playing && hovered ? "scale(1.04)" : "scale(1)",
         }}
-        // Native lazy loading for the thumbnail images themselves
         loading="lazy"
         decoding="async"
       />
 
-      {/*
-        VIDEO — src only set when inView (saves network on page load).
-        preload="none" so browser doesn't fetch anything until user plays.
-        Fades in over the thumbnail once canplay fires.
-      */}
       {inView && (
         <video
           ref={videoRef}
@@ -167,7 +182,8 @@ const VideoCard = ({
           muted={muted}
           preload="none"
           onCanPlay={handleCanPlay}
-          onEnded={() => { setPlaying(false); setShowCtrl(true); }}
+          // ✅ FIX 4: Also release active lock on video end
+          onEnded={() => { setPlaying(false); setShowCtrl(true); onPlay(null); }}
           className="vg-video-el"
           style={{
             opacity: videoReady ? 1 : 0,
@@ -230,6 +246,8 @@ const GlitchText = ({ children }: { children: string }) => (
 const VideoGallery = () => {
   const [visible, setVisible] = useState(false);
   const [containerW, setContainerW] = useState(0);
+  const [activeId, setActiveId] = useState<number | null>(null); // ✅ FIX 5
+
   const sectionRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
 
@@ -256,7 +274,6 @@ const VideoGallery = () => {
   return (
     <>
       <style>{`
-
         .vg-wrap::before {
           content:''; position:fixed; inset:-50%; width:200%; height:200%;
           background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
@@ -290,7 +307,6 @@ const VideoGallery = () => {
           50%{transform:scale(1.18) translate(12px,-14px)}
         }
 
-        /* Header */
         .vg-eyebrow {
           font-family:'Space Mono',monospace; font-size:10px; letter-spacing:.45em;
           color:hsl(var(--secondary)); text-transform:uppercase; margin-bottom:12px;
@@ -325,7 +341,6 @@ const VideoGallery = () => {
         }
         .vg-rule.on { opacity:1; }
 
-        /* Glitch */
         .vg-glitch { position:relative; display:inline-block; }
         .vg-glitch::before,.vg-glitch::after {
           content:attr(data-text); position:absolute; top:0; left:0; width:100%; height:100%;
@@ -347,7 +362,6 @@ const VideoGallery = () => {
           20%{clip:rect(76px,9999px,60px,0)} 30%,100%{clip:rect(0,0,0,0)}
         }
 
-        /* Grid */
         .vg-justified {
           display:flex; flex-direction:column; gap:3px;
           opacity:0; transform:translateY(24px);
@@ -357,7 +371,6 @@ const VideoGallery = () => {
         .vg-justified.on { opacity:1; transform:translateY(0); }
         .vg-row { display:flex; flex-direction:row; gap:3px; }
 
-        /* Card */
         .vg-card {
           position:relative; overflow:hidden; cursor:pointer;
           background:hsl(var(--background)); user-select:none;
@@ -366,19 +379,38 @@ const VideoGallery = () => {
         .vg-card:hover { will-change:transform; }
         .vg-card:fullscreen { width:100% !important; height:100% !important; }
 
-        /* Thumbnail — sits below the video, always rendered */
         .vg-thumb {
           position:absolute; inset:0; width:100%; height:100%;
           object-fit:cover; z-index:1;
           transition:opacity .4s ease, filter .38s ease, transform .7s cubic-bezier(.16,1,.3,1);
         }
 
-        /* Video — fades in over the thumbnail once ready */
         .vg-video-el {
           position:absolute; inset:0; width:100%; height:100%;
           object-fit:cover; z-index:2;
           transition:opacity .4s ease, filter .38s ease, transform .7s cubic-bezier(.16,1,.3,1);
         }
+
+        .vg-card:fullscreen .vg-video-el {
+          object-fit:contain;
+          background:#000;
+          transform:none !important;
+          filter:brightness(1) saturate(1) !important;
+        }
+        .vg-card:fullscreen .vg-thumb { display:none; }
+        .vg-card:-webkit-full-screen .vg-video-el {
+          object-fit:contain;
+          background:#000;
+          transform:none !important;
+          filter:brightness(1) saturate(1) !important;
+        }
+        .vg-card:-webkit-full-screen .vg-thumb { display:none; }
+        .vg-card:-moz-full-screen .vg-video-el {
+          object-fit:contain;
+          background:#000;
+          transform:none !important;
+        }
+        .vg-card:-moz-full-screen .vg-thumb { display:none; }
 
         .vg-grad {
           position:absolute; inset:0; z-index:3; pointer-events:none;
@@ -470,7 +502,6 @@ const VideoGallery = () => {
           transition:opacity .28s ease; pointer-events:none;
         }
 
-        /* Footer */
         .vg-footer {
           display:flex; align-items:center; gap:14px;
           opacity:0; transition:opacity .8s ease .48s;
@@ -490,10 +521,19 @@ const VideoGallery = () => {
           box-shadow:0 0 7px hsl(var(--secondary));
           animation:vg-bdot 2.2s ease-in-out infinite 1.1s;
         }
+
+        .vg-card:fullscreen .vg-grad { display:none; }
+        .vg-card:fullscreen .vg-shimmer { display:none; }
+        .vg-card:fullscreen .vg-corner { display:none; }
+        .vg-card:fullscreen .vg-border-ov { display:none; }
+        .vg-card:fullscreen .vg-idx { display:none; }
+        .vg-card:-webkit-full-screen .vg-grad { display:none; }
+        .vg-card:-webkit-full-screen .vg-shimmer { display:none; }
+        .vg-card:-webkit-full-screen .vg-corner { display:none; }
+
         @keyframes vg-bdot { 0%,100%{opacity:1} 50%{opacity:.12} }
-        /* ✅ ADD */
-html.is-scrolling .vg-wrap::before { animation-play-state: paused; }
-html.is-scrolling .vg-blob { animation-play-state: paused; }
+        html.is-scrolling .vg-wrap::before { animation-play-state:paused; }
+        html.is-scrolling .vg-blob { animation-play-state:paused; }
         @media (max-width:768px) { .vg-justified,.vg-row { gap:2px !important; } }
         @media (max-width:480px) { .vg-justified,.vg-row { gap:2px !important; } }
       `}</style>
@@ -504,7 +544,6 @@ html.is-scrolling .vg-blob { animation-play-state: paused; }
         <div className="vg-blob vg-blob-b" />
 
         <div className="relative z-10 max-w-7xl mx-auto px-5 md:px-20">
-
           <div className="mb-12">
             <p className={`vg-eyebrow ${visible ? "on" : ""}`}>▸ Motion Reel</p>
             <div style={{ display: "flex", alignItems: "baseline", gap: "22px" }}>
@@ -545,6 +584,8 @@ html.is-scrolling .vg-blob { animation-play-state: paused; }
                         index={idx}
                         width={w}
                         height={h}
+                        activeId={activeId}       // ✅ FIX 5
+                        onPlay={setActiveId}      // ✅ FIX 5
                       />
                     );
                   })}
@@ -552,7 +593,6 @@ html.is-scrolling .vg-blob { animation-play-state: paused; }
               );
             })}
           </div>
-
         </div>
       </section>
     </>

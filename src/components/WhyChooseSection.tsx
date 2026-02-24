@@ -43,13 +43,18 @@ const allStrengths = [
 const WhyChooseSection = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [autoRotate, setAutoRotate] = useState(true);
+  const [autoRotate, setAutoRotate] = useState(false); // ← false until visible
   const ref = useRef<HTMLDivElement>(null);
 
+  // Start auto-rotate ONLY when section comes into view
   useEffect(() => {
     const obs = new IntersectionObserver(
       ([e]) => {
-        if (e.isIntersecting) setIsVisible(true);
+        if (e.isIntersecting) {
+          setIsVisible(true);
+          setAutoRotate(true); // ← starts here, not on page load
+          obs.disconnect();
+        }
       },
       { threshold: 0.1 }
     );
@@ -143,9 +148,7 @@ const WhyChooseSection = () => {
             </span>
             <Disc3
               className="w-3.5 h-3.5 text-primary"
-              style={{
-                animation: "wc-spin 8s linear infinite reverse",
-              }}
+              style={{ animation: "wc-spin 8s linear infinite reverse" }}
             />
           </div>
 
@@ -166,22 +169,19 @@ const WhyChooseSection = () => {
           </p>
         </div>
 
-        {/* Main Card – restore glow-primary style */}
+        {/* Main Card */}
         <div className="max-w-4xl mx-auto mb-12">
           <div
             className={`
               group relative glass-card rounded-2xl p-8 md:p-10
-              border border-border
-              hover:glow-primary
+              border border-border hover:glow-primary
               transition-all duration-700 overflow-hidden
               ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}
             `}
           >
-            {/* Top/bottom lines */}
             <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary to-transparent opacity-60" />
             <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-secondary to-transparent opacity-40" />
 
-            {/* Corner accents */}
             <div className="absolute top-4 left-4 w-10 h-10 border-t-2 border-l-2 border-primary/30 rounded-tl-xl" />
             <div className="absolute top-4 right-4 w-10 h-10 border-t-2 border-r-2 border-secondary/30 rounded-tr-xl" />
             <div className="absolute bottom-4 left-4 w-10 h-10 border-b-2 border-l-2 border-accent/30 rounded-bl-xl" />
@@ -211,7 +211,7 @@ const WhyChooseSection = () => {
           </div>
         </div>
 
-        {/* Selector Grid – restore bg-gradient-cta + glow-primary logic */}
+        {/* Selector Grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 max-w-5xl mx-auto mb-10">
           {allStrengths.map((strength, index) => {
             const Icon = strength.icon;
@@ -221,37 +221,44 @@ const WhyChooseSection = () => {
               <button
                 key={index}
                 onClick={() => handleManualSelect(index)}
-                className={`group relative transition-all duration-500 ${isActive ? "scale-105" : "scale-100 hover:scale-105"
-                  }`}
+                className={`group relative transition-all duration-500 ${
+                  isActive ? "scale-105" : "scale-100 hover:scale-105"
+                }`}
                 style={{
+                  // ↓ Fix mobile yellow square
+                  WebkitTapHighlightColor: "transparent",
+                  outline: "none",
+                  appearance: "none",
+                  WebkitAppearance: "none",
                   opacity: isVisible ? 1 : 0,
                   transform: isVisible ? undefined : "translateY(20px)",
-                  transition: `opacity 0.5s ease-out ${index * 80}ms, transform 0.5s ease-out ${index * 80
-                    }ms, scale 0.3s`,
+                  transition: `opacity 0.5s ease-out ${index * 80}ms, transform 0.5s ease-out ${
+                    index * 80
+                  }ms, scale 0.3s`,
                 }}
               >
                 {isActive && (
                   <div className="absolute -inset-1 bg-gradient-to-r from-primary to-secondary rounded-xl blur-md opacity-75 animate-pulse" />
                 )}
-
                 <div
-                  className={`relative glass-card rounded-xl p-4 md:p-5 transition-all duration-300 ${isActive
-                      ? "bg-gradient-cta glow-primary"
-                      : "hover:glow-primary"
-                    }`}
+                  className={`relative glass-card rounded-xl p-4 md:p-5 transition-all duration-300 ${
+                    isActive ? "bg-gradient-cta glow-primary" : "hover:glow-primary"
+                  }`}
                 >
                   <Icon
-                    className={`w-7 h-7 mx-auto mb-2 transition-all duration-300 ${isActive
+                    className={`w-7 h-7 mx-auto mb-2 transition-all duration-300 ${
+                      isActive
                         ? "text-white"
                         : "text-muted-foreground group-hover:text-foreground"
-                      }`}
+                    }`}
                     strokeWidth={2}
                   />
                   <span
-                    className={`block text-xs font-medium text-center transition-colors duration-300 ${isActive
+                    className={`block text-xs font-medium text-center transition-colors duration-300 ${
+                      isActive
                         ? "text-white"
                         : "text-muted-foreground group-hover:text-foreground"
-                      }`}
+                    }`}
                   >
                     {strength.title.split(" ")[0]}
                   </span>
@@ -261,7 +268,7 @@ const WhyChooseSection = () => {
           })}
         </div>
 
-        {/* Progress bar */}
+        {/* Progress bar + pause/play */}
         <div className="max-w-2xl mx-auto flex items-center gap-4">
           <div className="flex-1 h-[2px] bg-secondary/20 rounded-full overflow-hidden">
             <div
@@ -271,12 +278,21 @@ const WhyChooseSection = () => {
               }}
             />
           </div>
+
+          {/* ↓ Fixed pause button — no browser default styles */}
           <button
             onClick={() => setAutoRotate(!autoRotate)}
-            className="flex-shrink-0 px-4 py-2 rounded-lg glass-card hover:glow-primary border border-border transition-all text-xs font-medium text-muted-foreground"
+            style={{
+              WebkitTapHighlightColor: "transparent",
+              outline: "none",
+              appearance: "none",
+              WebkitAppearance: "none",
+            }}
+            className="flex-shrink-0 px-4 py-2 rounded-lg glass-card hover:glow-primary border border-border transition-all text-xs font-medium text-muted-foreground focus:outline-none focus:ring-0 active:scale-95"
           >
             {autoRotate ? "⏸ Pause" : "▶ Play"}
           </button>
+
           <div className="text-xs text-muted-foreground font-medium min-w-[36px] text-right">
             {activeIndex + 1} / {allStrengths.length}
           </div>
@@ -288,13 +304,19 @@ const WhyChooseSection = () => {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
         }
-
         .glow-primary {
           box-shadow: 0 0 20px rgba(220, 38, 127, 0.15);
         }
-
         .glow-primary:hover {
           box-shadow: 0 0 30px rgba(220, 38, 127, 0.25);
+        }
+        /* ↓ Remove all browser default button focus styles globally for this section */
+        button:focus {
+          outline: none !important;
+          box-shadow: none !important;
+        }
+        button::-moz-focus-inner {
+          border: 0;
         }
       `}</style>
     </section>

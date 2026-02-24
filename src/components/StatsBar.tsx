@@ -10,28 +10,56 @@ const stats = [
 
 const useCountUp = (target: number, duration = 2000, start = false) => {
   const [count, setCount] = useState(0);
+  const startTimeRef = useRef<number | null>(null);
+  const frameRef = useRef<number | null>(null);
+
   useEffect(() => {
-    if (!start) return;
-    let startTime: number;
-    let frame: number;
+    if (!start) {
+      startTimeRef.current = null;
+      return;
+    }
+
     const animate = (now: number) => {
-      if (!startTime) startTime = now;
-      const p = Math.min((now - startTime) / duration, 1);
-      setCount(Math.floor((1 - Math.pow(1 - p, 4)) * target));
-      if (p < 1) frame = requestAnimationFrame(animate);
+      if (startTimeRef.current === null) {
+        startTimeRef.current = now;
+      }
+
+      const elapsed = now - startTimeRef.current;
+      const p = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - p, 4);
+      setCount(Math.floor(eased * target));
+
+      if (p < 1) {
+        frameRef.current = requestAnimationFrame(animate);
+      }
     };
-    frame = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(frame);
+
+    frameRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      if (frameRef.current !== null) {
+        cancelAnimationFrame(frameRef.current);
+      }
+    };
   }, [target, duration, start]);
+
   return count;
 };
 
 const StatItem = ({
-  value, suffix, label, delay, isVisible,
+  value,
+  suffix,
+  label,
+  delay,
+  isVisible,
   icon: Icon,
 }: {
-  value: number; suffix: string; label: string;
-  delay: number; isVisible: boolean; icon: React.ElementType;
+  value: number;
+  suffix: string;
+  label: string;
+  delay: number;
+  isVisible: boolean;
+  icon: React.ElementType;
 }) => {
   const count = useCountUp(value, 2000, isVisible);
   return (
@@ -57,7 +85,8 @@ const StatItem = ({
 
       {/* Number */}
       <div className="stat-number text-4xl sm:text-5xl md:text-6xl mb-2 group-hover:scale-110 transition-transform duration-300">
-        {count}{suffix}
+        {count}
+        <span className="text-2xl">{suffix}</span>
       </div>
 
       {/* Label */}
@@ -86,7 +115,12 @@ const StatsBar = () => {
 
   useEffect(() => {
     const obs = new IntersectionObserver(
-      ([e]) => { if (e.isIntersecting) { setIsVisible(true); obs.disconnect(); } },
+      ([e]) => {
+        if (e.isIntersecting) {
+          setIsVisible(true);
+          obs.disconnect();
+        }
+      },
       { threshold: 0.3 }
     );
     if (ref.current) obs.observe(ref.current);
@@ -145,7 +179,7 @@ const StatsBar = () => {
         <div className="relative grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
           {stats.map((stat, i) => (
             <div key={stat.label} className="relative">
-              <StatItem {...stat} delay={i * 120} isVisible={isVisible} />
+              <StatItem {...stat} delay={i * 120} isVisible={isVisible} icon={stat.icon} />
               {i < stats.length - 1 && (
                 <div className="hidden md:block absolute right-0 top-1/2 -translate-y-1/2 w-px h-32 bg-gradient-to-b from-transparent via-secondary/40 to-transparent" />
               )}
@@ -157,7 +191,7 @@ const StatsBar = () => {
       <style>{`
         @keyframes stats-float {
           0%, 100% { transform: translateY(0) translateX(0); opacity: 0.3; }
-          50%       { transform: translateY(-20px) translateX(8px); opacity: 0.7; }
+          50%      { transform: translateY(-20px) translateX(8px); opacity: 0.7; }
         }
         @keyframes stats-orbit {
           from { transform: rotate(0deg); }
