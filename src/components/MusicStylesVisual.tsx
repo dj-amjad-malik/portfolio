@@ -3,11 +3,11 @@ import { Music2, Radio, Disc3, Volume2, Play, Pause } from "lucide-react";
 
 const musicStyles = [
   {
-    name: "Tech House",
+    name: "Bolly Tech",
     image: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=800&auto=format&fit=crop",
     icon: Music2,
     description: "Deep grooves & hypnotic beats",
-    audio: "/audio/tech-house.mp3",
+    audio: "/audio/bollytech.mp3",
   },
   {
     name: "Afro House",
@@ -82,13 +82,11 @@ const MusicStylesVisual = () => {
 
   const handlePlay = useCallback(
     (index: number) => {
-      // Pause if same card clicked
       if (playingIndex === index) {
         stopAudio();
         return;
       }
 
-      // Stop any currently playing
       stopAudio();
 
       const newAudio = new Audio(musicStyles[index].audio);
@@ -100,14 +98,12 @@ const MusicStylesVisual = () => {
       newAudio
         .play()
         .then(() => {
-          // Vinyl rotation animation
           const rotate = () => {
             setRotation((prev) => (prev + 3) % 360);
             rotRafRef.current = requestAnimationFrame(rotate);
           };
           rotRafRef.current = requestAnimationFrame(rotate);
 
-          // Progress bar animation
           const updateProgress = () => {
             if (newAudio.duration) {
               setProgress((newAudio.currentTime / newAudio.duration) * 100);
@@ -120,7 +116,6 @@ const MusicStylesVisual = () => {
         })
         .catch((err) => {
           console.error("Audio play failed:", err);
-          // Still show visual playing state
           const rotate = () => {
             setRotation((prev) => (prev + 3) % 360);
             rotRafRef.current = requestAnimationFrame(rotate);
@@ -128,7 +123,6 @@ const MusicStylesVisual = () => {
           rotRafRef.current = requestAnimationFrame(rotate);
         });
 
-      // Auto-reset when track ends
       newAudio.addEventListener("ended", stopAudio, { once: true });
     },
     [playingIndex, stopAudio]
@@ -228,7 +222,7 @@ const MusicStylesVisual = () => {
         </div>
 
         {/* Card Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-5 md:gap-7 max-w-6xl mx-auto">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-7 max-w-6xl mx-auto">
           {musicStyles.map((style, index) => {
             const isHovered = hoveredIndex === index;
             const isPlaying = playingIndex === index;
@@ -239,52 +233,46 @@ const MusicStylesVisual = () => {
                 onMouseEnter={() => setHoveredIndex(index)}
                 onMouseLeave={() => setHoveredIndex(null)}
                 onClick={() => handlePlay(index)}
-                className={`group relative cursor-pointer transition-all duration-500 ${
-                  isVisible
+                className={`group relative cursor-pointer transition-all duration-500 ${isVisible
                     ? "opacity-100 translate-y-0"
                     : "opacity-0 translate-y-10"
-                }`}
+                  }`}
                 style={{ transitionDelay: `${index * 100}ms` }}
               >
                 {/* Outer glow */}
                 <div
-                  className={`absolute -inset-4 bg-gradient-to-br from-primary/40 via-primary/20 to-transparent rounded-3xl blur-2xl transition-all duration-500 ${
-                    isPlaying
+                  className={`absolute -inset-4 bg-gradient-to-br from-primary/40 via-primary/20 to-transparent rounded-3xl blur-2xl transition-all duration-500 ${isPlaying
                       ? "opacity-100 scale-110"
                       : isHovered
-                      ? "opacity-70 scale-105"
-                      : "opacity-0 scale-100"
-                  }`}
+                        ? "opacity-70 scale-105"
+                        : "opacity-0 scale-100"
+                    }`}
                 />
 
                 {/* Card */}
                 <div
-                  className={`relative aspect-square rounded-2xl overflow-hidden border-2 transition-all duration-500 ${
-                    isPlaying
-                      ? "border-primary shadow-2xl shadow-primary/40 scale-105"
+                  className={`relative aspect-square rounded-2xl overflow-hidden border-2 transition-all duration-500 ${isPlaying
+                      ? "border-primary shadow-2xl shadow-primary/40 scale-[1.03]"
                       : isHovered
-                      ? "border-primary/60 shadow-xl shadow-primary/20"
-                      : "border-primary/20 shadow-lg"
-                  }`}
+                        ? "border-primary/60 shadow-xl shadow-primary/20"
+                        : "border-primary/20 shadow-lg"
+                    }`}
                 >
                   {/* BG image */}
                   <div className="absolute inset-0">
                     <img
                       src={style.image}
                       alt={style.name}
-                      className={`w-full h-full object-cover transition-all duration-700 ${
-                        isHovered || isPlaying ? "scale-110" : "scale-100"
-                      }`}
+                      className={`w-full h-full object-cover transition-all duration-700 ${isHovered || isPlaying ? "scale-110" : "scale-100"
+                        }`}
                     />
                     <div
-                      className={`absolute inset-0 bg-gradient-to-b from-black/40 via-black/50 to-black/80 transition-opacity duration-500 ${
-                        isHovered || isPlaying ? "opacity-90" : "opacity-70"
-                      }`}
+                      className={`absolute inset-0 bg-gradient-to-b from-black/40 via-black/50 to-black/80 transition-opacity duration-500 ${isHovered || isPlaying ? "opacity-90" : "opacity-70"
+                        }`}
                     />
                     <div
-                      className={`absolute inset-0 bg-primary/40 mix-blend-overlay transition-opacity duration-500 ${
-                        isHovered || isPlaying ? "opacity-100" : "opacity-0"
-                      }`}
+                      className={`absolute inset-0 bg-primary/40 mix-blend-overlay transition-opacity duration-500 ${isHovered || isPlaying ? "opacity-100" : "opacity-0"
+                        }`}
                     />
                   </div>
 
@@ -305,84 +293,82 @@ const MusicStylesVisual = () => {
                   )}
 
                   {/* Card content */}
-                  <div className="relative h-full flex flex-col justify-between p-5 md:p-6">
+                  <div className="relative h-full flex flex-col justify-between p-3 md:p-6">
                     {/* Top row */}
                     <div className="flex items-start justify-between">
+                      {/* Icon — smaller on mobile */}
                       <div
-                        className={`w-12 h-12 rounded-xl bg-primary/20 backdrop-blur-sm border border-primary/30 flex items-center justify-center transition-all duration-500 ${
-                          isHovered || isPlaying ? "bg-primary/30 scale-110" : ""
-                        }`}
+                        className={`w-8 h-8 md:w-12 md:h-12 rounded-xl bg-primary/20 backdrop-blur-sm border border-primary/30 flex items-center justify-center transition-all duration-500 ${isHovered || isPlaying ? "bg-primary/30 scale-110" : ""
+                          }`}
                       >
-                        <style.icon className="w-6 h-6 text-white" />
+                        <style.icon className="w-4 h-4 md:w-6 md:h-6 text-white" />
                       </div>
 
+                      {/* LIVE badge — compact on mobile */}
                       {isPlaying && (
-                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary backdrop-blur-sm animate-pulse">
-                          <Volume2 className="w-3.5 h-3.5 text-white" />
-                          <span className="text-xs font-bold text-white">LIVE</span>
+                        <div className="flex items-center gap-1 px-1.5 py-1 md:px-3 md:py-1.5 rounded-full bg-primary backdrop-blur-sm animate-pulse">
+                          <Volume2 className="w-2.5 h-2.5 md:w-3.5 md:h-3.5 text-white" />
+                          <span className="text-[9px] md:text-xs font-bold text-white">LIVE</span>
                         </div>
                       )}
                     </div>
 
-                    {/* Center play button */}
+                    {/* Center play button — smaller on mobile */}
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div
-                        className={`transition-all duration-500 ${
-                          isHovered || isPlaying
+                        className={`transition-all duration-500 ${isHovered || isPlaying
                             ? "opacity-100 scale-100"
                             : "opacity-0 scale-75"
-                        }`}
+                          }`}
                       >
-                        <div className="w-20 h-20 rounded-full bg-white/10 backdrop-blur-md border-2 border-white/30 flex items-center justify-center hover:bg-white/20 hover:scale-110 transition-all duration-300">
+                        <div className="w-12 h-12 md:w-20 md:h-20 rounded-full bg-white/10 backdrop-blur-md border-2 border-white/30 flex items-center justify-center hover:bg-white/20 hover:scale-110 transition-all duration-300">
                           {isPlaying ? (
-                            <Pause className="w-10 h-10 text-white" />
+                            <Pause className="w-6 h-6 md:w-10 md:h-10 text-white" />
                           ) : (
-                            <Play className="w-10 h-10 text-white ml-1" />
+                            <Play className="w-6 h-6 md:w-10 md:h-10 text-white ml-0.5 md:ml-1" />
                           )}
                         </div>
                       </div>
                     </div>
 
-                    {/* Equalizer bars when playing */}
-                    {isPlaying && (
-                      <div className="absolute bottom-20 left-1/2 -translate-x-1/2 flex gap-1.5 items-end h-10">
-                        {Array.from({ length: 5 }).map((_, i) => (
-                          <div
-                            key={i}
-                            className="w-2 bg-gradient-to-t from-primary to-white rounded-full"
-                            style={{
-                              animation: "music-eq-wave 0.6s ease-in-out infinite",
-                              animationDelay: `${i * 0.1}s`,
-                            }}
-                          />
-                        ))}
-                      </div>
-                    )}
-
                     {/* Bottom text */}
                     <div>
+                      {/* Equalizer bars — only visible on md+, or as tiny version on mobile */}
+                      {isPlaying && (
+                        <div className="flex gap-0.5 md:gap-1.5 items-end h-4 md:h-6 mb-1.5 md:mb-2">
+                          {Array.from({ length: 5 }).map((_, i) => (
+                            <div
+                              key={i}
+                              className="w-1 md:w-2 bg-gradient-to-t from-primary to-white rounded-full"
+                              style={{
+                                animation: "music-eq-wave 0.6s ease-in-out infinite",
+                                animationDelay: `${i * 0.1}s`,
+                              }}
+                            />
+                          ))}
+                        </div>
+                      )}
+
                       <h3
-                        className={`font-bold text-xl md:text-2xl text-white mb-1 transition-all duration-300 ${
-                          isHovered || isPlaying
+                        className={`font-bold text-sm md:text-2xl text-white mb-0.5 md:mb-1 transition-all duration-300 leading-tight ${isHovered || isPlaying
                             ? "translate-y-0 opacity-100"
                             : "translate-y-2 opacity-90"
-                        }`}
+                          }`}
                       >
                         {style.name}
                       </h3>
                       <p
-                        className={`text-sm text-white/80 transition-all duration-500 ${
-                          isHovered || isPlaying
+                        className={`text-[10px] md:text-sm text-white/80 leading-tight transition-all duration-500 ${isHovered || isPlaying
                             ? "translate-y-0 opacity-100"
                             : "translate-y-4 opacity-0"
-                        }`}
+                          }`}
                       >
                         {style.description}
                       </p>
 
                       {/* Progress bar */}
                       {isPlaying && (
-                        <div className="mt-3 h-1 bg-white/20 rounded-full overflow-hidden">
+                        <div className="mt-2 h-0.5 md:h-1 bg-white/20 rounded-full overflow-hidden">
                           <div
                             className="h-full bg-gradient-to-r from-primary to-white rounded-full transition-none"
                             style={{ width: `${progress}%` }}
@@ -395,11 +381,15 @@ const MusicStylesVisual = () => {
 
                 {/* Diagonal hover shine */}
                 <div
-                  className={`absolute inset-0 rounded-2xl bg-gradient-to-tr from-transparent via-white/10 to-transparent transition-opacity duration-500 pointer-events-none overflow-hidden ${
-                    isHovered ? "opacity-100" : "opacity-0"
-                  }`}
-                  style={{ transform: "translateX(-100%) rotate(45deg)" }}
-                />
+                  className={`absolute inset-0 rounded-2xl pointer-events-none overflow-hidden`}
+                >
+                  <div
+                    className={`absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent transition-all duration-700 ${isHovered ? "translate-x-full opacity-100" : "-translate-x-full opacity-0"
+                      }`}
+                    style={{ transform: isHovered ? "translateX(100%) rotate(45deg)" : "translateX(-100%) rotate(45deg)" }}
+                  />
+                </div>
+
               </div>
             );
           })}

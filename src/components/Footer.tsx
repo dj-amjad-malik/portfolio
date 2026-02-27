@@ -12,8 +12,13 @@ const Footer = () => {
           {/* Brand Column */}
           <div className="space-y-6 lg:pr-4">
             <a href="/" className="flex items-center gap-3 group">
-              <div className="w-12 h-12 rounded-xl bg-gradient-cta flex items-center justify-center glow-pink group-hover:scale-105 transition-transform duration-300">
-                <Music className="w-7 h-7 text-white" />
+              <div className="relative">
+                <div className="absolute inset-0 rounded-full bg-gradient-cta opacity-30 blur-md group-hover:blur-lg transition-all duration-300" />
+                <img
+                  src="assets/log.jpeg"
+                  alt="Amjad Malik"
+                  className="relative w-12 h-12 rounded-full object-cover group-hover:scale-110 transition-transform duration-300"
+                />
               </div>
               <span className="font-heading font-bold text-2xl text-foreground">
                 Amjad Malik

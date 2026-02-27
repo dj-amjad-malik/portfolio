@@ -1,17 +1,45 @@
 import { useEffect, useRef, useState, useMemo, useCallback } from "react";
 import { Play, Pause, Maximize2, Minimize2, Volume2, VolumeX } from "lucide-react";
 
+// const videoGallery = [
+//   { src: "https://res.cloudinary.com/dcglpl1qn/video/upload/v1771925623/v2_pds1sd.mp4", thumb: "assets/thumbnails/v2_thumb.png", orientation: "portrait" },
+//   { src: "https://res.cloudinary.com/dcglpl1qn/video/upload/v1771923945/v3_rvhyst.mp4", thumb: "assets/thumbnails/v3_thumb.jpg", orientation: "landscape" },
+//   { src: "https://res.cloudinary.com/dcglpl1qn/video/upload/v1771923909/v4_zyhte3.mp4", thumb: "assets/thumbnails/v4_thumb.jpg", orientation: "landscape" },
+//   { src: "https://res.cloudinary.com/dcglpl1qn/video/upload/v1771924062/v5_kivc9p.mp4", thumb: "assets/thumbnails/v5_thumb.jpg", orientation: "landscape" },
+//   { src: "https://res.cloudinary.com/dcglpl1qn/video/upload/v1771923996/v7_lzilms.mp4", thumb: "assets/thumbnails/v7_thumb.jpg", orientation: "portrait" },
+//   { src: "https://res.cloudinary.com/dcglpl1qn/video/upload/v1771923878/v8_pw9hfq.mp4", thumb: "assets/thumbnails/v8_thumb.jpg", orientation: "portrait" },
+//   { src: "https://res.cloudinary.com/dcglpl1qn/video/upload/v1771923903/v9_q9cf1a.mp4", thumb: "assets/thumbnails/v9_thumb.jpg", orientation: "portrait" },
+//   { src: "https://res.cloudinary.com/dcglpl1qn/video/upload/v1771924089/v10_h63ivu.mp4", thumb: "assets/thumbnails/v10_thumb.jpg", orientation: "portrait" },
+//   { src: "https://res.cloudinary.com/dcglpl1qn/video/upload/v1771924051/v1_svfsxe.mp4", thumb: "assets/thumbnails/v1_thumb.jpg", orientation: "landscape" },
+//   { src: "https://res.cloudinary.com/dcglpl1qn/video/upload/v1772218789/WhatsApp_Video_2026-02-28_at_12.17.24_AM_1_inythf.mp4", thumb: "https://res.cloudinary.com/dcglpl1qn/video/upload/so_2/v1772218789/WhatsApp_Video_2026-02-28_at_12.17.24_AM_1_inythf.jpg", orientation: "portrait" },
+//   { src: "https://res.cloudinary.com/dcglpl1qn/video/upload/v1772218775/WhatsApp_Video_2026-02-28_at_12.17.24_AM_e3dgxd.mp4", thumb: "https://res.cloudinary.com/dcglpl1qn/video/upload/so_2/v1772218775/WhatsApp_Video_2026-02-28_at_12.17.24_AM_e3dgxd.jpg", orientation: "portrait" },
+//   { src: "https://res.cloudinary.com/dcglpl1qn/video/upload/v1772218618/WhatsApp_Video_2026-02-28_at_12.17.23_AM_gftnxb.mp4", thumb: "https://res.cloudinary.com/dcglpl1qn/video/upload/so_2/v1772218618/WhatsApp_Video_2026-02-28_at_12.17.23_AM_gftnxb.jpg", orientation: "portrait" },
+//   { src: "https://res.cloudinary.com/dcglpl1qn/video/upload/v1772218607/WhatsApp_Video_2026-02-28_at_12.17.10_AM_srecll.mp4", thumb: "https://res.cloudinary.com/dcglpl1qn/video/upload/so_2/v1772218607/WhatsApp_Video_2026-02-28_at_12.17.10_AM_srecll.jpg", orientation: "landscape" },
+//   { src: "https://res.cloudinary.com/dcglpl1qn/video/upload/v1772218606/WhatsApp_Video_2026-02-28_at_12.16.57_AM_pjbuzg.mp4", thumb: "https://res.cloudinary.com/dcglpl1qn/video/upload/so_2/v1772218606/WhatsApp_Video_2026-02-28_at_12.16.57_AM_pjbuzg.jpg", orientation: "landscape" },
+//   { src: "https://res.cloudinary.com/dcglpl1qn/video/upload/v1772218605/WhatsApp_Video_2026-02-28_at_12.21.58_AM_jabobp.mp4", thumb: "https://res.cloudinary.com/dcglpl1qn/video/upload/so_2/v1772218605/WhatsApp_Video_2026-02-28_at_12.21.58_AM_jabobp.jpg", orientation: "portrait" },
+//   { src: "https://res.cloudinary.com/dcglpl1qn/video/upload/v1772219184/WhatsApp_Video_2026-02-28_at_12.32.55_AM_pknfek.mp4", thumb: "https://res.cloudinary.com/dcglpl1qn/video/upload/so_2/v1772219184/WhatsApp_Video_2026-02-28_at_12.32.55_AM_pknfek.jpg", orientation: "landscape" },
+//   { src: "https://res.cloudinary.com/dcglpl1qn/video/upload/v1772219184/WhatsApp_Video_2026-02-28_at_12.33.09_AM_f0akcs.mp4", thumb: "https://res.cloudinary.com/dcglpl1qn/video/upload/so_2/v1772219184/WhatsApp_Video_2026-02-28_at_12.33.09_AM_f0akcs.jpg", orientation: "portrait" },
+//   { src: "https://res.cloudinary.com/dcglpl1qn/video/upload/v1772219189/WhatsApp_Video_2026-02-28_at_12.33.08_AM_fhd76z.mp4", thumb: "https://res.cloudinary.com/dcglpl1qn/video/upload/so_2/v1772219189/WhatsApp_Video_2026-02-28_at_12.33.08_AM_fhd76z.jpg", orientation: "portrait" },
+// ];
+
 const videoGallery = [
-  { src: "https://res.cloudinary.com/dcglpl1qn/video/upload/v1771924051/v1_svfsxe.mp4", thumb: "assets/thumbnails/v1_thumb.jpg", orientation: "landscape" },
-  { src: "https://res.cloudinary.com/dcglpl1qn/video/upload/v1771925623/v2_pds1sd.mp4", thumb: "assets/thumbnails/v2_thumb.png", orientation: "portrait" },
   { src: "https://res.cloudinary.com/dcglpl1qn/video/upload/v1771923945/v3_rvhyst.mp4", thumb: "assets/thumbnails/v3_thumb.jpg", orientation: "landscape" },
+  { src: "https://res.cloudinary.com/dcglpl1qn/video/upload/v1771925623/v2_pds1sd.mp4", thumb: "assets/thumbnails/v2_thumb.png", orientation: "portrait" },
   { src: "https://res.cloudinary.com/dcglpl1qn/video/upload/v1771923909/v4_zyhte3.mp4", thumb: "assets/thumbnails/v4_thumb.jpg", orientation: "landscape" },
-  { src: "https://res.cloudinary.com/dcglpl1qn/video/upload/v1771924062/v5_kivc9p.mp4", thumb: "assets/thumbnails/v5_thumb.jpg", orientation: "landscape" },
-  { src: "https://res.cloudinary.com/dcglpl1qn/video/upload/v1771923945/v6_e84h9i.mp4", thumb: "assets/thumbnails/v6_thumb.jpg", orientation: "portrait" },
-  { src: "https://res.cloudinary.com/dcglpl1qn/video/upload/v1771923996/v7_lzilms.mp4", thumb: "assets/thumbnails/v7_thumb.jpg", orientation: "portrait" },
   { src: "https://res.cloudinary.com/dcglpl1qn/video/upload/v1771923878/v8_pw9hfq.mp4", thumb: "assets/thumbnails/v8_thumb.jpg", orientation: "portrait" },
+  { src: "https://res.cloudinary.com/dcglpl1qn/video/upload/v1771924062/v5_kivc9p.mp4", thumb: "assets/thumbnails/v5_thumb.jpg", orientation: "landscape" },
+  { src: "https://res.cloudinary.com/dcglpl1qn/video/upload/v1772218605/WhatsApp_Video_2026-02-28_at_12.21.58_AM_jabobp.mp4", thumb: "https://res.cloudinary.com/dcglpl1qn/video/upload/so_2/v1772218605/WhatsApp_Video_2026-02-28_at_12.21.58_AM_jabobp.jpg", orientation: "portrait" },
+  { src: "https://res.cloudinary.com/dcglpl1qn/video/upload/v1772218607/WhatsApp_Video_2026-02-28_at_12.17.10_AM_srecll.mp4", thumb: "https://res.cloudinary.com/dcglpl1qn/video/upload/so_2/v1772218607/WhatsApp_Video_2026-02-28_at_12.17.10_AM_srecll.jpg", orientation: "landscape" },
   { src: "https://res.cloudinary.com/dcglpl1qn/video/upload/v1771923903/v9_q9cf1a.mp4", thumb: "assets/thumbnails/v9_thumb.jpg", orientation: "portrait" },
   { src: "https://res.cloudinary.com/dcglpl1qn/video/upload/v1771924089/v10_h63ivu.mp4", thumb: "assets/thumbnails/v10_thumb.jpg", orientation: "portrait" },
+  { src: "https://res.cloudinary.com/dcglpl1qn/video/upload/v1772218606/WhatsApp_Video_2026-02-28_at_12.16.57_AM_pjbuzg.mp4", thumb: "https://res.cloudinary.com/dcglpl1qn/video/upload/so_2/v1772218606/WhatsApp_Video_2026-02-28_at_12.16.57_AM_pjbuzg.jpg", orientation: "landscape" },
+  { src: "https://res.cloudinary.com/dcglpl1qn/video/upload/v1772218789/WhatsApp_Video_2026-02-28_at_12.17.24_AM_1_inythf.mp4", thumb: "https://res.cloudinary.com/dcglpl1qn/video/upload/so_2/v1772218789/WhatsApp_Video_2026-02-28_at_12.17.24_AM_1_inythf.jpg", orientation: "portrait" },
+  { src: "https://res.cloudinary.com/dcglpl1qn/video/upload/v1772219184/WhatsApp_Video_2026-02-28_at_12.32.55_AM_pknfek.mp4", thumb: "https://res.cloudinary.com/dcglpl1qn/video/upload/so_2/v1772219184/WhatsApp_Video_2026-02-28_at_12.32.55_AM_pknfek.jpg", orientation: "landscape" },
+  { src: "https://res.cloudinary.com/dcglpl1qn/video/upload/v1772218775/WhatsApp_Video_2026-02-28_at_12.17.24_AM_e3dgxd.mp4", thumb: "https://res.cloudinary.com/dcglpl1qn/video/upload/so_2/v1772218775/WhatsApp_Video_2026-02-28_at_12.17.24_AM_e3dgxd.jpg", orientation: "portrait" },
+  { src: "https://res.cloudinary.com/dcglpl1qn/video/upload/v1772219184/WhatsApp_Video_2026-02-28_at_12.33.09_AM_f0akcs.mp4", thumb: "https://res.cloudinary.com/dcglpl1qn/video/upload/so_2/v1772219184/WhatsApp_Video_2026-02-28_at_12.33.09_AM_f0akcs.jpg", orientation: "landscape" },
+  { src: "https://res.cloudinary.com/dcglpl1qn/video/upload/v1772218618/WhatsApp_Video_2026-02-28_at_12.17.23_AM_gftnxb.mp4", thumb: "https://res.cloudinary.com/dcglpl1qn/video/upload/so_2/v1772218618/WhatsApp_Video_2026-02-28_at_12.17.23_AM_gftnxb.jpg", orientation: "portrait" },
+  { src: "https://res.cloudinary.com/dcglpl1qn/video/upload/v1772219189/WhatsApp_Video_2026-02-28_at_12.33.08_AM_fhd76z.mp4", thumb: "https://res.cloudinary.com/dcglpl1qn/video/upload/so_2/v1772219189/WhatsApp_Video_2026-02-28_at_12.33.08_AM_fhd76z.jpg", orientation: "portrait" },
+  { src: "https://res.cloudinary.com/dcglpl1qn/video/upload/v1771924051/v1_svfsxe.mp4", thumb: "assets/thumbnails/v1_thumb.jpg", orientation: "landscape" },
 ];
 
 const LANDSCAPE_RATIO = 16 / 9;
