@@ -23,7 +23,7 @@ const mediaRequirements = [
 
 const sections = [
   { icon: Volume2, title: "Sound Requirements", items: soundRequirements },
-  { icon: Disc, title: "Preferred DJ Setups", items: preferredSetups },
+  { icon: Disc, title: "Preferred Console Setups", items: preferredSetups },
   { icon: Usb, title: "Media Requirements", items: mediaRequirements },
 ];
 
